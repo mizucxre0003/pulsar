@@ -1,6 +1,5 @@
 import { useEffect } from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import WebApp from '@twa-dev/sdk'
 import Navigation from './components/Navigation'
 import Home from './pages/Home'
 import Friends from './pages/Friends'
@@ -9,13 +8,21 @@ import WatchParty from './pages/WatchParty'
 
 function App() {
   useEffect(() => {
-    WebApp.ready();
-    WebApp.expand();
+    // Safely init Telegram WebApp - only works inside Telegram
+    try {
+      const tg = window.Telegram?.WebApp;
+      if (tg) {
+        tg.ready();
+        tg.expand();
+      }
+    } catch (e) {
+      console.warn("Not inside Telegram, WebApp SDK skipped.");
+    }
   }, [])
 
   return (
     <Router>
-      <div className="pb-24 min-h-screen">
+      <div style={{ paddingBottom: '96px', minHeight: '100vh' }}>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/friends" element={<Friends />} />

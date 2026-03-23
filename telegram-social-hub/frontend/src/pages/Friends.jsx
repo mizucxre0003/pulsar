@@ -1,66 +1,59 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { GlassCard } from '../components/ui/GlassCard'
 import { GlassButton } from '../components/ui/GlassButton'
 import { UserPlus } from 'lucide-react'
-import { supabase } from '../lib/supabase'
-import WebApp from '@twa-dev/sdk'
 
 export default function Friends() {
   const [friends, setFriends] = useState([
-    // Mock user for testing UI presence
-    { id: '1234', username: 'Crypto Chad', status: 'Drawing in Web3 Group', color: 'from-pink-500 to-orange-400' }
+    { id: '1', username: 'Crypto Chad', status: 'Рисует в Web3 Group', color: 'linear-gradient(135deg, #f093fb, #f5576c)' }
   ])
   const [friendId, setFriendId] = useState('')
 
-  useEffect(() => {
-    // In a real app we would load their actual friends from Supabase based on user uuid
-    // Subscribing to friends activity in the user_activity table would let us know where they are
-  }, [])
-
   const addFriend = () => {
-    if (!friendId) return
-    // Mock functionality
-    setFriends([...friends, { 
-      id: friendId, 
-      username: `User ${friendId.slice(0, 4)}`, 
+    if (!friendId.trim()) return
+    setFriends([...friends, {
+      id: friendId,
+      username: `User ${friendId.slice(0, 4)}`,
       status: 'Online',
-      color: 'from-blue-400 to-cyan-300'
+      color: 'linear-gradient(135deg, #4facfe, #00f2fe)'
     }])
     setFriendId('')
   }
 
   return (
     <div className="p-4 pt-8 max-w-md mx-auto">
-      <h1 className="text-2xl font-bold mb-6 tracking-tight">Friends</h1>
-      
-      <GlassCard className="mb-6 flex gap-2 p-2 rounded-full pl-6 border border-white/20">
-        <input 
-          type="text" 
-          placeholder="Enter Telegram ID..." 
-          className="flex-1 bg-transparent border-none text-sm text-white focus:outline-none placeholder:text-white/40"
+      <h1 className="text-2xl font-bold mb-6 tracking-tight">Друзья</h1>
+
+      <div className="glass-panel rounded-full flex gap-2 p-2 pl-6 mb-6" style={{ border: '1px solid rgba(255,255,255,0.2)' }}>
+        <input
+          type="number"
+          placeholder="Введи Telegram ID..."
+          className="flex-1 bg-transparent border-none text-sm text-white focus:outline-none"
+          style={{ color: 'white' }}
           value={friendId}
           onChange={(e) => setFriendId(e.target.value)}
         />
-        <GlassButton className="rounded-full px-4 py-2 bg-white/10" onClick={addFriend}>
+        <GlassButton className="rounded-full px-4 py-2" onClick={addFriend}>
           <UserPlus size={18} />
         </GlassButton>
-      </GlassCard>
+      </div>
 
-      <div className="space-y-4">
+      <div className="space-y-3">
         {friends.length === 0 ? (
           <GlassCard>
-            <p className="text-white/50 text-center py-4">You have no friends yet.</p>
+            <p className="text-center py-4" style={{ color: 'rgba(255,255,255,0.5)' }}>Пока нет друзей.</p>
           </GlassCard>
         ) : (
-          friends.map((friend, i) => (
-            <GlassCard key={i} className="flex justify-between items-center p-4 hover:bg-white/10 transition-colors">
+          friends.map((friend) => (
+            <GlassCard key={friend.id} className="flex justify-between items-center p-4">
               <div className="flex items-center gap-3">
-                <div className={`w-12 h-12 rounded-full bg-gradient-to-tr ${friend.color || 'from-green-400 to-emerald-500'} flex items-center justify-center font-bold text-lg shadow-lg`}>
+                <div className="w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg text-white shadow-lg"
+                  style={{ background: friend.color }}>
                   {friend.username[0]}
                 </div>
                 <div>
                   <p className="font-medium text-white">{friend.username}</p>
-                  <p className="text-xs text-green-300 font-medium tracking-wide">{friend.status}</p>
+                  <p className="text-xs font-medium" style={{ color: '#34c759' }}>{friend.status}</p>
                 </div>
               </div>
             </GlassCard>
