@@ -3,7 +3,7 @@ import { GlassCard } from '../components/ui/GlassCard'
 import { GlassButton } from '../components/ui/GlassButton'
 import WebApp from '@twa-dev/sdk'
 import { supabase } from '../lib/supabase'
-import ReactPlayer from 'react-player/youtube'
+import ReactPlayer from 'react-player'
 import { Play, Pause } from 'lucide-react'
 
 export default function WatchParty() {
