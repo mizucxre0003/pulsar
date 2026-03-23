@@ -4,12 +4,14 @@ import os
 from aiogram import Bot, Dispatcher, types
 from aiogram.filters import Command
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
+from aiohttp import web
 from dotenv import load_dotenv
 
 load_dotenv()
 
 BOT_TOKEN = os.getenv("BOT_TOKEN", "YOUR_BOT_TOKEN_HERE")
 WEBAPP_URL = os.getenv("WEBAPP_URL", "https://your-tma-url.com")
+PORT = int(os.environ.get("PORT", 8000))
 
 logging.basicConfig(level=logging.INFO)
 
@@ -22,13 +24,9 @@ async def start_handler(message: types.Message):
     chat_type = message.chat.type
     start_param = message.text.split(maxsplit=1)[1] if len(message.text.split()) > 1 else ""
     
-    # If the bot is added to a group, the chat_id will be the group's ID (which is < 0)
-    # The TMA can also receive a custom start_param to denote group launch
     url_with_context = f"{WEBAPP_URL}?start_param={start_param}"
     if chat_type in ["group", "supergroup"]:
-        # Launching from group
         url_with_context = f"{WEBAPP_URL}?group_id={message.chat.id}"
-        pass
 
     markup = InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text="Open Group Social Hub", web_app=WebAppInfo(url=url_with_context))]
@@ -39,8 +37,20 @@ async def start_handler(message: types.Message):
     else:
         await message.answer("Welcome to your Social Hub! Open the app to check your friends and recent activity.", reply_markup=markup)
 
+# Dummy web server for Render's Free Web Service Health Check
+async def handle_ping(request):
+    return web.Response(text="Bot is running! (Render Health Check Passed)")
+
 async def main():
-    print("Starting bot...")
+    print(f"Starting dummy web server for Render Free Tier on port {PORT}...")
+    app = web.Application()
+    app.router.add_get('/', handle_ping)
+    runner = web.AppRunner(app)
+    await runner.setup()
+    site = web.TCPSite(runner, '0.0.0.0', PORT)
+    await site.start()
+    
+    print("Starting bot polling...")
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
