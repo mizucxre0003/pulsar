@@ -8,36 +8,61 @@
 }
 
 body {
-  background-color: var(--color-dark-900);
-  color: white;
+  background-color: #f3f4f6;
+  color: #111827;
   font-family: sans-serif;
   -webkit-font-smoothing: antialiased;
   min-height: 100vh;
   overflow-x: hidden;
-  background-image: radial-gradient(circle at 50% -20%, #2a2a2a, var(--color-dark-900));
   background-attachment: fixed;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.dark body {
+  background-color: var(--color-dark-900);
+  color: white;
+  background-image: radial-gradient(circle at 50% -20%, #2a2a2a, var(--color-dark-900));
 }
 
 @layer components {
   .glass-panel {
-    background-color: rgba(255, 255, 255, 0.05);
+    background-color: rgba(255, 255, 255, 0.8);
     backdrop-filter: blur(12px);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
+  }
+  
+  .dark .glass-panel {
+    background-color: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.1);
     box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
   }
   
   .glass-button {
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: rgba(0, 0, 0, 0.05);
     backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(0, 0, 0, 0.05);
     transition: all 0.3s ease;
   }
   
+  .dark .glass-button {
+    background-color: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
   .glass-button:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+  }
+  
+  .dark .glass-button:hover {
     background-color: rgba(255, 255, 255, 0.2);
   }
   
   .glass-button:active {
+    background-color: rgba(0, 0, 0, 0.05);
+  }
+  
+  .dark .glass-button:active {
     background-color: rgba(255, 255, 255, 0.05);
   }
 }

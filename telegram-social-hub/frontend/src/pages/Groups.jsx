@@ -38,8 +38,8 @@ export default function Groups() {
 
   return (
     <div className="p-4 pt-10 max-w-md mx-auto">
-      <h1 className="text-2xl font-bold mb-2 tracking-tight text-white">Группы</h1>
-      <p className="text-sm mb-6" style={{ color: 'rgba(255,255,255,0.4)' }}>
+      <h1 className="text-2xl font-bold mb-2 tracking-tight text-gray-900 dark:text-white">Группы</h1>
+      <p className="text-sm mb-6 text-gray-500 dark:text-white/40">
         Группы, в которые добавлен бот
       </p>
 
@@ -51,9 +51,9 @@ export default function Groups() {
         </div>
       ) : groups.length === 0 ? (
         <GlassCard className="text-center py-12">
-          <Users size={40} className="mx-auto mb-3" style={{ color: 'rgba(255,255,255,0.3)' }} />
-          <p className="font-medium text-white mb-1">Нет групп</p>
-          <p className="text-sm" style={{ color: 'rgba(255,255,255,0.4)' }}>
+          <Users size={40} className="mx-auto mb-3 text-gray-400 dark:text-white/30" />
+          <p className="font-medium text-gray-900 dark:text-white mb-1">Нет групп</p>
+          <p className="text-sm text-gray-500 dark:text-white/40">
             Добавь бота в группу, и она появится здесь
           </p>
         </GlassCard>
@@ -72,17 +72,17 @@ export default function Groups() {
 
                 {/* Info */}
                 <div className="flex-1 min-w-0 cursor-pointer" onClick={() => navigate(`/group/${group.chat_id}`)}>
-                  <p className="font-semibold text-white truncate">{group.title}</p>
-                  <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>
+                  <p className="font-semibold text-gray-900 dark:text-white truncate">{group.title}</p>
+                  <p className="text-xs mt-0.5 text-gray-500 dark:text-white/40">
                     {group.username ? `@${group.username}` : `ID: ${group.chat_id}`}
                   </p>
                 </div>
 
                 {/* 3-dot menu */}
                 <div className="relative flex-shrink-0">
-                  <button className="p-2 rounded-full" style={{ backgroundColor: 'rgba(255,255,255,0.08)' }}
+                  <button className="p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
                     onClick={() => setMenuOpen(menuOpen === group.chat_id ? null : group.chat_id)}>
-                    <MoreHorizontal size={18} className="text-white" />
+                    <MoreHorizontal size={18} className="text-gray-900 dark:text-white" />
                   </button>
                   {menuOpen === group.chat_id && (
                     <motion.div initial={{ opacity: 0, scale: 0.9, y: -5 }} animate={{ opacity: 1, scale: 1, y: 0 }}

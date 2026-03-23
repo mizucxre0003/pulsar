@@ -57,7 +57,7 @@ export default function Friends() {
     if (!un || !currentUser) return
     
     // Find user by username
-    const { data: target } = await supabase.from('profiles').select('id, username').ilike('username', un).single()
+    const { data: target } = await supabase.from('profiles').select('id, username, telegram_id').ilike('username', un).single()
     if (!target) {
       alert('Пользователь не найден! Убедитесь, что вы вводите правильный Telegram @username (а не ID), и этот человек запускал нашего бота.')
       return
@@ -74,7 +74,20 @@ export default function Friends() {
     })
     
     if (error) alert('Заявка уже отправлена или вы уже друзья')
-    else { alert('Заявка отправлена!'); setFriendUsername('') }
+    else {
+      alert('Заявка отправлена!');
+      setFriendUsername('');
+      
+      const apiUrl = import.meta.env.VITE_BOT_API_URL || 'http://localhost:8000';
+      fetch(`${apiUrl}/api/notify_request`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          from_username: currentUser.username || "Пользователь",
+          to_tg_id: target.telegram_id
+        })
+      }).catch(e => console.error("Notify err:", e));
+    }
   }
 
   const acceptRequest = async (reqId) => {
@@ -89,25 +102,23 @@ export default function Friends() {
 
   return (
     <div className="p-4 pt-10 max-w-md mx-auto pb-32">
-      <h1 className="text-2xl font-bold mb-6 tracking-tight text-white dark:text-white text-gray-900">Контакты</h1>
+      <h1 className="text-2xl font-bold mb-6 tracking-tight text-gray-900 dark:text-white">Контакты</h1>
 
       {/* Tabs */}
       <div className="flex gap-2 mb-6">
         <button onClick={() => setTab('friends')} className="flex-1 py-2 rounded-xl text-sm font-medium transition-all"
           style={{ 
             backgroundColor: tab === 'friends' ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.05)',
-            border: `1px solid ${tab === 'friends' ? 'rgba(255,255,255,0.3)' : 'transparent'}`,
-            color: 'white'
+            border: `1px solid ${tab === 'friends' ? 'rgba(255,255,255,0.3)' : 'transparent'}`
           }}>
-          Друзья ({friends.length})
+          <span className="text-gray-900 dark:text-white">Друзья ({friends.length})</span>
         </button>
         <button onClick={() => setTab('requests')} className="flex-1 py-2 rounded-xl text-sm font-medium transition-all relative"
           style={{ 
             backgroundColor: tab === 'requests' ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.05)',
-            border: `1px solid ${tab === 'requests' ? 'rgba(255,255,255,0.3)' : 'transparent'}`,
-            color: 'white'
+            border: `1px solid ${tab === 'requests' ? 'rgba(255,255,255,0.3)' : 'transparent'}`
           }}>
-          Заявки
+          <span className="text-gray-900 dark:text-white">Заявки</span>
           {requests.length > 0 && (
             <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full text-xs flex items-center justify-center font-bold">
               {requests.length}
@@ -119,11 +130,9 @@ export default function Friends() {
       {tab === 'friends' ? (
         <>
           {/* Add friend input */}
-          <div className="glass-panel rounded-full flex gap-2 p-2 pl-6 mb-6"
-            style={{ border: '1px solid rgba(255,255,255,0.15)' }}>
+          <div className="glass-panel rounded-full flex gap-2 p-2 pl-6 mb-6">
             <input type="text" placeholder="@username друга..."
-              className="flex-1 bg-transparent text-sm text-white focus:outline-none placeholder-white/40"
-              style={{ color: 'white' }}
+              className="flex-1 bg-transparent text-sm focus:outline-none text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-white/40"
               value={friendUsername}
               onChange={e => setFriendUsername(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && sendRequest()}
@@ -136,7 +145,7 @@ export default function Friends() {
           <div className="space-y-3">
             {friends.length === 0 ? (
               <GlassCard>
-                <p className="text-center py-6" style={{ color: 'rgba(255,255,255,0.4)' }}>
+                <p className="text-center py-6 text-gray-500 dark:text-white/40">
                   У вас пока нет друзей.
                 </p>
               </GlassCard>
@@ -152,17 +161,17 @@ export default function Friends() {
                     </div>
 
                     <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-white">@{friend.username}</p>
+                      <p className="font-semibold text-gray-900 dark:text-white">@{friend.username}</p>
                       <div className="flex items-center gap-1.5 mt-0.5">
                         <div className="w-1.5 h-1.5 rounded-full bg-green-400" />
-                        <p className="text-xs" style={{ color: 'rgba(255,255,255,0.5)' }}>В сети</p>
+                        <p className="text-xs text-gray-500 dark:text-white/50">В сети</p>
                       </div>
                     </div>
 
                     <div className="relative flex-shrink-0">
-                      <button className="p-2 rounded-full" style={{ backgroundColor: 'rgba(255,255,255,0.08)' }}
+                      <button className="p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
                         onClick={() => setMenuOpen(menuOpen === friend.id ? null : friend.id)}>
-                        <MoreHorizontal size={18} className="text-white" />
+                        <MoreHorizontal size={18} className="text-gray-900 dark:text-white" />
                       </button>
                       <AnimatePresence>
                         {menuOpen === friend.id && (
@@ -188,7 +197,7 @@ export default function Friends() {
         <div className="space-y-3">
           {requests.length === 0 ? (
             <GlassCard>
-              <p className="text-center py-6" style={{ color: 'rgba(255,255,255,0.4)' }}>
+              <p className="text-center py-6 text-gray-500 dark:text-white/40">
                 Нет новых заявок
               </p>
             </GlassCard>
@@ -196,8 +205,8 @@ export default function Friends() {
             requests.map(req => (
               <GlassCard key={req.id} className="p-4 flex items-center justify-between gap-3">
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium text-white truncate">@{req.user_id.username}</p>
-                  <p className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>Хочет добавить вас</p>
+                  <p className="font-medium text-gray-900 dark:text-white truncate">@{req.user_id.username}</p>
+                  <p className="text-xs text-gray-500 dark:text-white/40">Хочет добавить вас</p>
                 </div>
                 <div className="flex gap-2">
                   <button onClick={() => acceptRequest(req.id)} className="p-2 rounded-full bg-green-500/20 text-green-400 hover:bg-green-500/30">

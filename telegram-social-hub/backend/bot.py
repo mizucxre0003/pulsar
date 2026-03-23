@@ -96,11 +96,39 @@ async def start_handler(message: types.Message):
     ])
 
     if chat_type in ["group", "supergroup"]:
-        await upsert_group(message.chat.id, message.chat.title, message.chat.username)
+        await upsert_group(message.chat.id, message.chat.title, message.chat.username or "")
         await message.answer(f"🎨 Холст для *{message.chat.title}* готов!", reply_markup=markup, parse_mode="Markdown")
     else:
-        await message.answer("👋 Добро пожаловать в Social Hub!\nОткрой приложение ниже:", reply_markup=markup)
+        text = (
+            "👋 Привет! Добро пожаловать в **Social Hub** 🎉\n\n"
+            "Здесь ты можешь искать друзей, делиться профилем и слушать музыку вместе!\n"
+            "Нажми на кнопку ниже, чтобы открыть приложение 👇"
+        )
+        await message.answer(text, reply_markup=markup, parse_mode="Markdown")
 
+
+# Endpoint for notifying users about new requests
+async def notify_request_handler(request):
+    try:
+        data = await request.json()
+        to_tg_id = data.get("to_tg_id")
+        from_username = data.get("from_username")
+        
+        if to_tg_id and from_username:
+            text = f"🔔 **Новая заявка!**\nПользователь @{from_username} хочет добавить вас в друзья! Зайдите в Social Hub, чтобы принять заявку. 🚀"
+            await bot.send_message(chat_id=to_tg_id, text=text, parse_mode="Markdown")
+        return web.Response(text="OK", headers={"Access-Control-Allow-Origin": "*"})
+    except Exception as e:
+        logging.error(f"Error notifying: {e}")
+        return web.Response(status=500, text=str(e), headers={"Access-Control-Allow-Origin": "*"})
+
+async def handle_options(request):
+    headers = {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type",
+    }
+    return web.Response(status=204, headers=headers)
 
 # Dummy HTTP server for Render Free Tier
 async def handle_ping(request):
@@ -110,11 +138,13 @@ async def handle_ping(request):
 async def main():
     app = web.Application()
     app.router.add_get('/', handle_ping)
+    app.router.add_post('/api/notify_request', notify_request_handler)
+    app.router.add_options('/api/notify_request', handle_options)
     runner = web.AppRunner(app)
     await runner.setup()
     site = web.TCPSite(runner, '0.0.0.0', PORT)
     await site.start()
-    logging.info(f"Health check server started on port {PORT}")
+    logging.info(f"Health check & API server started on port {PORT}")
     
     # Must specify allowed_updates to receive my_chat_member events
     await dp.start_polling(bot, allowed_updates=["message", "my_chat_member", "chat_member"])
