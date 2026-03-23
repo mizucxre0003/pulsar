@@ -70,6 +70,23 @@ async def start_handler(message: types.Message):
     chat_type = message.chat.type
     start_param = message.text.split(maxsplit=1)[1] if len(message.text.split()) > 1 else ""
 
+    # Upsert user profile to database so they can be found by username by friends
+    if message.from_user and SUPABASE_URL and SUPABASE_KEY:
+        headers = {
+            "apikey": SUPABASE_KEY,
+            "Authorization": f"Bearer {SUPABASE_KEY}",
+            "Content-Type": "application/json",
+            "Prefer": "resolution=merge-duplicates"
+        }
+        user_payload = {
+            "telegram_id": message.from_user.id,
+            "username": message.from_user.username or "",
+            "first_name": message.from_user.first_name,
+            "last_name": message.from_user.last_name or ""
+        }
+        async with httpx.AsyncClient() as client:
+            await client.post(f"{SUPABASE_URL}/rest/v1/profiles", json=user_payload, headers=headers)
+
     url_with_context = f"{WEBAPP_URL}?start_param={start_param}"
     if chat_type in ["group", "supergroup"]:
         url_with_context = f"{WEBAPP_URL}?group_id={message.chat.id}"
@@ -79,6 +96,7 @@ async def start_handler(message: types.Message):
     ])
 
     if chat_type in ["group", "supergroup"]:
+        await upsert_group(message.chat.id, message.chat.title, message.chat.username)
         await message.answer(f"🎨 Холст для *{message.chat.title}* готов!", reply_markup=markup, parse_mode="Markdown")
     else:
         await message.answer("👋 Добро пожаловать в Social Hub!\nОткрой приложение ниже:", reply_markup=markup)
@@ -97,7 +115,9 @@ async def main():
     site = web.TCPSite(runner, '0.0.0.0', PORT)
     await site.start()
     logging.info(f"Health check server started on port {PORT}")
-    await dp.start_polling(bot)
+    
+    # Must specify allowed_updates to receive my_chat_member events
+    await dp.start_polling(bot, allowed_updates=["message", "my_chat_member", "chat_member"])
 
 
 if __name__ == "__main__":
