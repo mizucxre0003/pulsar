@@ -12,6 +12,8 @@ load_dotenv()
 
 BOT_TOKEN = os.getenv("BOT_TOKEN", "YOUR_BOT_TOKEN_HERE")
 WEBAPP_URL = os.getenv("WEBAPP_URL", "https://your-tma-url.com")
+if WEBAPP_URL and not WEBAPP_URL.startswith("http"):
+    WEBAPP_URL = "https://" + WEBAPP_URL
 SUPABASE_URL = os.getenv("SUPABASE_URL", "")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY", "")  # service_role key for backend writes
 PORT = int(os.environ.get("PORT", 8000))
